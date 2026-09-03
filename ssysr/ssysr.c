@@ -1,5 +1,30 @@
+/*
+ *    |        tasks        |     state     |
+ *    |---------------------|---------------|
+ *    | need to make a live |       N       |
+ *    | version             |               |
+ *    |---------------------|---------------|
+ *    | add args            |       N       |
+ *    |---------------------|---------------|
+ *    | clean code          |       N       |
+ *    |---------------------|---------------|
+ *
+ *  
+ *
+ *
+ *===================================================
+ *  Motes :
+ *   now i shoould make it more cleanrt and effcint 
+ *   i think it need more more work 
+ *
+ *
+ *
+ * */
+
+
 #include <stdio.h>
 #include <unistd.h>
+
 
 #define WORD8 8
 
@@ -22,7 +47,6 @@ int main(){
   float KbToGib = 1024 * 1024;
 
 
-      while (true) {
   FILE *fpCpu = fopen("/proc/meminfo", "r");
   if(fpCpu == NULL){
     perror("can't open /proc/meminfo");
@@ -78,5 +102,4 @@ int main(){
       usleep(500000);
     
 
-      }
 }

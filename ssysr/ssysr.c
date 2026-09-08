@@ -11,10 +11,21 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <termios.h>
+#include <pthread.h>
+#include <signal.h>
 
+#define ESC "\033"
 #define MEM_INFO_PATH "/proc/meminfo"
 
  
+typedef struct termios termios;
+termios orig_termios;
+
+
+volatile int running = 1;
+
+
 typedef enum MetricType{
   RAM,
   CPU,
@@ -28,6 +39,43 @@ typedef struct mem{
   float num;
   int   line;
 } mem;
+
+
+void restore_terminal(){
+  tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios);
+}
+
+
+void enable_row_mode(){
+  tcgetattr(STDIN_FILENO, &orig_termios);
+  atexit(restore_terminal);
+
+  termios raw = orig_termios;
+  raw.c_lflag &= ~(ICANON | ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &raw);
+}
+
+
+void handle_sigint(int sig){
+  (void)sig;
+
+  running = 0;
+  printf("\n CTRL + C \n");
+}
+
+
+void* keyboard_listener(void *arg){
+  (void)arg;
+   
+  char c;
+ 
+  while (running) {
+   if(read(STDIN_FILENO, &c, 1) == 1){
+     if(c == 'q') running = 0;
+   }
+  }
+  return NULL;
+}
 
 
 int memStr_to_int(char *str){
@@ -101,10 +149,25 @@ void print_ref(){     // refrech print
 
 
 int main(int argc, char *argv[]){
-  float used, avi, tot, pr = 0;
+  enable_row_mode();
+  signal(SIGINT, handle_sigint);
+  pthread_t listener_thread;
+  pthread_create(&listener_thread, NULL, keyboard_listener, NULL);
 
-  fetch_Mem_Info(&tot, &avi, &used, &pr);
-  printf("\rTotal = %.2f GiB\tUsed = %.2f GiB\t\tAvailble = %.2f GiB\t\t%%%.2f\0", tot, used, avi, 100 - pr);  
+  float used, avi, tot, pr = 0;
+  printf(ESC "[?25l");
+
+  while (running) {
   
+    fetch_Mem_Info(&tot, &avi, &used, &pr);
+    printf(ESC "[2J" ESC "[H");
+    printf("\rTotal     =   %.2f GiB\nUsed      =   %.2f GiB\nAvailble  =   %.2f GiB\t\t%%%.2f", tot, used, avi, 100 - pr);  
+    fflush(stdout);
+    usleep(250000);
+   }
+    printf(ESC "[?25h");
+    printf(ESC "[2J" ESC "[H");
+  fflush(stdout);
+  pthread_join(listener_thread, NULL);
   return 0;
 }

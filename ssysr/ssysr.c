@@ -1,12 +1,10 @@
 /*
- *  - rewrite the code agine 
- *  - i will isolte the code blocks and make a function fo every thing 
- *  - it wolud have args and it eill do multiple things like show the live use fo resoueres
- *  - -try make it clean ans safe as much as i can 
- *
- *  bugs = 
- *    there id a ovreflow bug in the struct i guss
- *
+ * - need to make it live by useing threds  
+ * - make the args and flow of cantrol 
+ * - start donig cpu 
+ * 
+ *  "why say many words when few can do trick"
+ *      - kevin malone 
  * */
 
 #include <stdio.h>
@@ -26,57 +24,59 @@ typedef enum MetricType{
 
 typedef struct mem{
   MetricType type;
-  char  str[8];
   char  lineStr[48];
-  int   strsize;
   float num;
   int   line;
-
 } mem;
 
 
-int memStr_to_int(char *str, int size){
+int memStr_to_int(char *str){
   char buff[27] = {0};
   int t = 0;
+  long return_value;
   
-   for (int i = 0; str[i] != '\0' && t < (int)sizeof(buff) - 1; i++) {
+  for (int i = 0; str[i] != '\0' && t < (int)sizeof(buff) - 1; i++) {   // it take the number in the string and save it 
       if (str[i] >= '0' && str[i] <= '9') {
           buff[t++] = str[i];
       }
-   }
-     buff[t] ='\0';
+  }
+    
+  buff[t] ='\0';
 
-    long value = atoi(buff);
-  return value;
+  return_value = atoi(buff);
+  return return_value;
 }
 
 
 void fetch_Mem_Info(float *pTotal, float *pAvai, float *pUsed, float *Pprc){
   FILE *fpmem = fopen(MEM_INFO_PATH, "r");
-    if(fpmem == NULL) {
+    if(fpmem == NULL) {     // this looks bad for now but idk how to do it, work on that letar
       printf("null\n");
-      exit; 
+      exit; // i think it should be some pointer on a golbal var to chcek if the file open or not here
     }
     int kbToGib = 1024 * 1024;
+    
     mem  total;
     mem  mfree;
     mem  avail;
-     
+  
+    total.type, mfree.type, avail.type = RAM;
+
     total.line = 0;
     mfree.line = 1;
     avail.line = 2;
 
 
   for (int i = 0; i < 3; i++ ){
-    if(i == 0) fgets(total.lineStr, sizeof(total.lineStr), fpmem);
-    if(i == 1) fgets(mfree.lineStr, sizeof(mfree.lineStr), fpmem);
-    if(i == 2) fgets(avail.lineStr, sizeof(avail.lineStr), fpmem);
+    if(i == total.line) fgets(total.lineStr, sizeof(total.lineStr), fpmem);
+    if(i == mfree.line) fgets(mfree.lineStr, sizeof(mfree.lineStr), fpmem);
+    if(i == avail.line) fgets(avail.lineStr, sizeof(avail.lineStr), fpmem);
     
   }
 
-  total.num = memStr_to_int(total.lineStr, strlen(total.lineStr)); 
-  mfree.num = memStr_to_int(mfree.lineStr, strlen(mfree.lineStr));
-  avail.num = memStr_to_int(avail.lineStr, strlen(avail.lineStr)); 
+  total.num = memStr_to_int(total.lineStr); 
+  mfree.num = memStr_to_int(mfree.lineStr);
+  avail.num = memStr_to_int(avail.lineStr); 
   
   (*pTotal) = total.num / kbToGib;
   (*pAvai)  = avail.num / kbToGib;
@@ -84,11 +84,14 @@ void fetch_Mem_Info(float *pTotal, float *pAvai, float *pUsed, float *Pprc){
   (*Pprc)   = (avail.num/total.num ) * 100;
 
 
- // printf("memtotal = %d   memfree = %d    memavailable = %d", total.num, mfree.num, avail.num);
   fclose(fpmem);
 } 
 
 void calc_Cpu_Use(){  
+
+}
+
+void calc_Network_Use(){
 
 }
 

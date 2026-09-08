@@ -16,7 +16,7 @@
 
 #define MEM_INFO_PATH "/proc/meminfo"
 
-
+ 
 typedef enum MetricType{
   RAM,
   CPU,
@@ -26,34 +26,38 @@ typedef enum MetricType{
 
 typedef struct mem{
   MetricType type;
-  char str[8];
-  char lineStr[48];
-  int  strsize;
-  long long num;
-  int  line;
+  char  str[8];
+  char  lineStr[48];
+  int   strsize;
+  float num;
+  int   line;
 
 } mem;
 
 
 int memStr_to_int(char *str, int size){
-  char buff[32];
+  char buff[27] = {0};
   int t = 0;
-    for(int i = 0; i < size; i++){
-      if(str[i] >= 48 && str[i] <= 57){
-          buff[t] = str[i];
-          t++;
-           }
+  
+   for (int i = 0; str[i] != '\0' && t < (int)sizeof(buff) - 1; i++) {
+      if (str[i] >= '0' && str[i] <= '9') {
+          buff[t++] = str[i];
       }
+   }
+     buff[t] ='\0';
 
-
-  return atoi(buff);
+    long value = atoi(buff);
+  return value;
 }
 
 
-void fetch_Mem_Info(int *pTotal, int *pAvai, int *pUsed, float *Pprc){
+void fetch_Mem_Info(float *pTotal, float *pAvai, float *pUsed, float *Pprc){
   FILE *fpmem = fopen(MEM_INFO_PATH, "r");
-    if(fpmem == NULL) printf("null\n");
-
+    if(fpmem == NULL) {
+      printf("null\n");
+      exit; 
+    }
+    int kbToGib = 1024 * 1024;
     mem  total;
     mem  mfree;
     mem  avail;
@@ -70,17 +74,17 @@ void fetch_Mem_Info(int *pTotal, int *pAvai, int *pUsed, float *Pprc){
     
   }
 
-  total.num = memStr_to_int(total.lineStr, sizeof(total.lineStr));
-  mfree.num = memStr_to_int(mfree.lineStr, sizeof(mfree.lineStr));
-  avail.num = memStr_to_int(avail.lineStr, sizeof(avail.lineStr));
+  total.num = memStr_to_int(total.lineStr, strlen(total.lineStr)); 
+  mfree.num = memStr_to_int(mfree.lineStr, strlen(mfree.lineStr));
+  avail.num = memStr_to_int(avail.lineStr, strlen(avail.lineStr)); 
   
-  (*pTotal) = total.num;
-  (*pAvai)  = avail.num;
-  (*pUsed)  = total.num - avail.num;
-  (*Pprc)   = avail.num/total.num;
+  (*pTotal) = total.num / kbToGib;
+  (*pAvai)  = avail.num / kbToGib;
+  (*pUsed)  = (total.num - avail.num) / kbToGib;
+  (*Pprc)   = (avail.num/total.num ) * 100;
 
 
-  //printf("t = %d\tf = %d\ta = %d", total.num, mfree.num, avail.num);
+ // printf("memtotal = %d   memfree = %d    memavailable = %d", total.num, mfree.num, avail.num);
   fclose(fpmem);
 } 
 
@@ -94,10 +98,10 @@ void print_ref(){     // refrech print
 
 
 int main(int argc, char *argv[]){
-  int used, avi, tot = 0;
-  float pr = 0;
+  float used, avi, tot, pr = 0;
 
   fetch_Mem_Info(&tot, &avi, &used, &pr);
-  printf("t = %d\tavi =%d\tused = %d\tpr = %f\n", tot, avi, used, pr);  
+  printf("\rTotal = %.2f GiB\tUsed = %.2f GiB\t\tAvailble = %.2f GiB\t\t%%%.2f\0", tot, used, avi, 100 - pr);  
+  
   return 0;
 }

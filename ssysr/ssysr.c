@@ -1,5 +1,4 @@
 /*
- * - need to make it live by useing threds  
  * - make the args and flow of cantrol 
  * - start donig cpu 
  * 
@@ -25,12 +24,20 @@ termios orig_termios;
 
 volatile int running = 1;
 
+typedef enum prin{  
+  CLEAR,
+  HIDE_CURSOR,
+  RESTORR_CRUSOR, 
+  ENTER_BUFFER_SCREEN,
+  EXIT_BUFFER_SCREEN
+} prin;
+
 
 typedef enum MetricType{
   RAM,
   CPU,
   NETWORK
-}MetricType;
+} MetricType;
 
 
 typedef struct mem{
@@ -58,17 +65,14 @@ void enable_row_mode(){
 
 void handle_sigint(int sig){
   (void)sig;
-
   running = 0;
-  printf("\n CTRL + C \n");
+  printf("\n press 'q' to exit\n");
 }
 
 
 void* keyboard_listener(void *arg){
   (void)arg;
-   
   char c;
- 
   while (running) {
    if(read(STDIN_FILENO, &c, 1) == 1){
      if(c == 'q') running = 0;
@@ -143,10 +147,41 @@ void calc_Network_Use(){
 
 }
 
-void print_ref(){     // refrech print
+void print_funcs(prin cs){     // refrech print
+  switch (cs) {
+    case CLEAR:
+     printf(ESC "[2J" ESC "[H");
+    break;
+  
+    case HIDE_CURSOR:
+     printf(ESC "[?25l");
+    break;
+    
+    case RESTORR_CRUSOR:
+     printf(ESC "[?25h");
+    break;
 
+    case ENTER_BUFFER_SCREEN:
+      printf(ESC "[?1049h");
+    break;
+
+    case EXIT_BUFFER_SCREEN:
+      printf(ESC "[?1049l");
+    break;
+
+    default:
+      break;
+  }
 }
 
+
+void print_bar(char *name, float pr){
+    char bar[10] = "..........";
+    pr = 100 - pr;
+    int pr2 = pr/10;
+    for(int i = 0; i <= pr2; i++) bar[i] = '#';
+    printf("%s  [ %s ]  %%%.2f\n", name, bar, pr);
+};
 
 int main(int argc, char *argv[]){
   enable_row_mode();
@@ -155,18 +190,25 @@ int main(int argc, char *argv[]){
   pthread_create(&listener_thread, NULL, keyboard_listener, NULL);
 
   float used, avi, tot, pr = 0;
-  printf(ESC "[?25l");
 
+  print_funcs(ENTER_BUFFER_SCREEN);
+  print_funcs(CLEAR);
+  print_funcs(HIDE_CURSOR);
+  
   while (running) {
   
     fetch_Mem_Info(&tot, &avi, &used, &pr);
-    printf(ESC "[2J" ESC "[H");
-    printf("\rTotal     =   %.2f GiB\nUsed      =   %.2f GiB\nAvailble  =   %.2f GiB\t\t%%%.2f", tot, used, avi, 100 - pr);  
+    print_funcs(CLEAR);
+    printf("\rTotal     =   %.2f GiB\nUsed      =   %.2f GiB\nAvailble  =   %.2f GiB\n", tot, used, avi);  
+    print_bar("used",pr);
     fflush(stdout);
     usleep(250000);
    }
-    printf(ESC "[?25h");
-    printf(ESC "[2J" ESC "[H");
+    
+
+    print_funcs(EXIT_BUFFER_SCREEN);
+    print_funcs(RESTORR_CRUSOR);
+    //printf(ESC "[2J" ESC "[H");
   fflush(stdout);
   pthread_join(listener_thread, NULL);
   return 0;

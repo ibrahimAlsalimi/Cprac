@@ -16,7 +16,7 @@
 
 #define ESC "\033"
 #define MEM_INFO_PATH "/proc/meminfo"
-
+#define CPU_STATS_PATH "/proc/stat"
  
 typedef struct termios termios;
 termios orig_termios;
@@ -38,6 +38,32 @@ typedef enum MetricType{
   CPU,
   NETWORK
 } MetricType;
+
+
+typedef struct cpuSample {
+
+  unsigned long long user, nice, system, idle;
+  unsigned long long iowait, irq, soft, steal;
+
+} CpuSample;
+
+
+typedef struct cpuCore {
+    int id;
+    cpuSample prav;
+    cpuSample curr;
+    double usage;
+
+} cpuCore;
+
+
+typedef struct cpuMonitor{
+    int      core_count;  
+    CpuCore  total;      
+    CpuCore *cores;  
+
+} cpuMonitor;
+
 
 
 typedef struct mem{
@@ -139,13 +165,6 @@ void fetch_Mem_Info(float *pTotal, float *pAvai, float *pUsed, float *Pprc){
   fclose(fpmem);
 } 
 
-void calc_Cpu_Use(){  
-
-}
-
-void calc_Network_Use(){
-
-}
 
 void print_funcs(prin cs){     // refrech print
   switch (cs) {
@@ -194,19 +213,21 @@ int main(int argc, char *argv[]){
   print_funcs(ENTER_BUFFER_SCREEN);
   print_funcs(CLEAR);
   print_funcs(HIDE_CURSOR);
-  
+
   while (running) {
   
     fetch_Mem_Info(&tot, &avi, &used, &pr);
     print_funcs(CLEAR);
-    printf("\rTotal     =   %.2f GiB\nUsed      =   %.2f GiB\nAvailble  =   %.2f GiB\n", tot, used, avi);  
-    print_bar("used",pr);
+    printf("Total     =   %.2f GiB\nUsed      =   %.2f GiB\nAvailble  =   %.2f GiB\n", tot, used, avi);  
+    print_bar("used", pr);
+
+    calc_Cpu_Use();
     fflush(stdout);
     usleep(250000);
    }
     
 
-    print_funcs(EXIT_BUFFER_SCREEN);
+   print_funcs(EXIT_BUFFER_SCREEN);
     print_funcs(RESTORR_CRUSOR);
     //printf(ESC "[2J" ESC "[H");
   fflush(stdout);

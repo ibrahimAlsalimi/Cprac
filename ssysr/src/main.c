@@ -1,9 +1,9 @@
 /*
- * - make the args and flow of cantrol 
- * - start donig cpu 
- * 
+ * - make the args and flow of cantrol
+ * - start donig cpu
+ *
  *  "why say many words when few can do trick"
- *      - kevin malone 
+ *      - kevin malone
  * */
 
 #include <stdio.h>
@@ -13,21 +13,20 @@
 #include <termios.h>
 #include <pthread.h>
 #include <signal.h>
-
+#include "mem.h"
 #define ESC "\033"
-#define MEM_INFO_PATH "/proc/meminfo"
 #define CPU_STATS_PATH "/proc/stat"
- 
+
 typedef struct termios termios;
 termios orig_termios;
 
 
 volatile int running = 1;
 
-typedef enum prin{  
+typedef enum prin{
   CLEAR,
   HIDE_CURSOR,
-  RESTORR_CRUSOR, 
+  RESTORR_CRUSOR,
   ENTER_BUFFER_SCREEN,
   EXIT_BUFFER_SCREEN
 } prin;
@@ -38,40 +37,6 @@ typedef enum MetricType{
   CPU,
   NETWORK
 } MetricType;
-
-
-typedef struct cpuSample {
-
-  unsigned long long user, nice, system, idle;
-  unsigned long long iowait, irq, soft, steal;
-
-} CpuSample;
-
-
-typedef struct cpuCore {
-    int id;
-    cpuSample prav;
-    cpuSample curr;
-    double usage;
-
-} cpuCore;
-
-
-typedef struct cpuMonitor{
-    int      core_count;  
-    CpuCore  total;      
-    CpuCore *cores;  
-
-} cpuMonitor;
-
-
-
-typedef struct mem{
-  MetricType type;
-  char  lineStr[48];
-  float num;
-  int   line;
-} mem;
 
 
 void restore_terminal(){
@@ -107,18 +72,18 @@ void* keyboard_listener(void *arg){
   return NULL;
 }
 
-
+/*
 int memStr_to_int(char *str){
   char buff[27] = {0};
   int t = 0;
   long return_value;
-  
-  for (int i = 0; str[i] != '\0' && t < (int)sizeof(buff) - 1; i++) {   // it take the number in the string and save it 
+
+  for (int i = 0; str[i] != '\0' && t < (int)sizeof(buff) - 1; i++) {   // it take the number in the string and save it
       if (str[i] >= '0' && str[i] <= '9') {
           buff[t++] = str[i];
       }
   }
-    
+
   buff[t] ='\0';
 
   return_value = atoi(buff);
@@ -133,11 +98,11 @@ void fetch_Mem_Info(float *pTotal, float *pAvai, float *pUsed, float *Pprc){
       exit; // i think it should be some pointer on a golbal var to chcek if the file open or not here
     }
     int kbToGib = 1024 * 1024;
-    
+
     mem  total;
     mem  mfree;
     mem  avail;
-  
+
     total.type, mfree.type, avail.type = RAM;
 
     total.line = 0;
@@ -149,13 +114,13 @@ void fetch_Mem_Info(float *pTotal, float *pAvai, float *pUsed, float *Pprc){
     if(i == total.line) fgets(total.lineStr, sizeof(total.lineStr), fpmem);
     if(i == mfree.line) fgets(mfree.lineStr, sizeof(mfree.lineStr), fpmem);
     if(i == avail.line) fgets(avail.lineStr, sizeof(avail.lineStr), fpmem);
-    
+
   }
 
-  total.num = memStr_to_int(total.lineStr); 
+  total.num = memStr_to_int(total.lineStr);
   mfree.num = memStr_to_int(mfree.lineStr);
-  avail.num = memStr_to_int(avail.lineStr); 
-  
+  avail.num = memStr_to_int(avail.lineStr);
+
   (*pTotal) = total.num / kbToGib;
   (*pAvai)  = avail.num / kbToGib;
   (*pUsed)  = (total.num - avail.num) / kbToGib;
@@ -163,19 +128,19 @@ void fetch_Mem_Info(float *pTotal, float *pAvai, float *pUsed, float *Pprc){
 
 
   fclose(fpmem);
-} 
+}
 
-
+*/
 void print_funcs(prin cs){     // refrech print
   switch (cs) {
     case CLEAR:
      printf(ESC "[2J" ESC "[H");
     break;
-  
+
     case HIDE_CURSOR:
      printf(ESC "[?25l");
     break;
-    
+
     case RESTORR_CRUSOR:
      printf(ESC "[?25h");
     break;
@@ -215,17 +180,16 @@ int main(int argc, char *argv[]){
   print_funcs(HIDE_CURSOR);
 
   while (running) {
-  
+
     fetch_Mem_Info(&tot, &avi, &used, &pr);
     print_funcs(CLEAR);
-    printf("Total     =   %.2f GiB\nUsed      =   %.2f GiB\nAvailble  =   %.2f GiB\n", tot, used, avi);  
+    printf("Total     =   %.2f GiB\nUsed      =   %.2f GiB\nAvailble  =   %.2f GiB\n", tot, used, avi);
     print_bar("used", pr);
 
-    calc_Cpu_Use();
     fflush(stdout);
     usleep(250000);
    }
-    
+
 
    print_funcs(EXIT_BUFFER_SCREEN);
     print_funcs(RESTORR_CRUSOR);

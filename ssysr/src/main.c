@@ -18,11 +18,10 @@
 #include "mem.h"
 #include "term.h"
 #include "ui.h"
+#include "input.h"
+
 // #define ESC "\033"
 #define CPU_STATS_PATH "/proc/stat"
-
-volatile int running = 1;
-
 
 
 typedef enum MetricType{
@@ -31,6 +30,8 @@ typedef enum MetricType{
   NETWORK
 } MetricType;
 
+/*
+volatile int running = 1;
 
 void handle_sigint(int sig){
   (void)sig;
@@ -50,7 +51,7 @@ void* keyboard_listener(void *arg){
   return NULL;
 }
 
-
+*/
 int main(int argc, char *argv[]){
   enable_row_mode();
   signal(SIGINT, handle_sigint);

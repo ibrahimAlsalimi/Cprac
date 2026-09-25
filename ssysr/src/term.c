@@ -1,10 +1,8 @@
 // term.c 
 #include <termios.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include "term.h"
-
+#include <stdlib.h>
 
 termios orig_termios;
 

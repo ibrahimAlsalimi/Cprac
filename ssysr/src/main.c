@@ -13,23 +13,16 @@
 #include <termios.h>
 #include <pthread.h>
 #include <signal.h>
+
+
 #include "mem.h"
-#define ESC "\033"
+#include "term.h"
+#include "ui.h"
+// #define ESC "\033"
 #define CPU_STATS_PATH "/proc/stat"
-
-typedef struct termios termios;
-termios orig_termios;
-
 
 volatile int running = 1;
 
-typedef enum prin{
-  CLEAR,
-  HIDE_CURSOR,
-  RESTORR_CRUSOR,
-  ENTER_BUFFER_SCREEN,
-  EXIT_BUFFER_SCREEN
-} prin;
 
 
 typedef enum MetricType{
@@ -37,21 +30,6 @@ typedef enum MetricType{
   CPU,
   NETWORK
 } MetricType;
-
-
-void restore_terminal(){
-  tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios);
-}
-
-
-void enable_row_mode(){
-  tcgetattr(STDIN_FILENO, &orig_termios);
-  atexit(restore_terminal);
-
-  termios raw = orig_termios;
-  raw.c_lflag &= ~(ICANON | ECHO);
-  tcsetattr(STDIN_FILENO, TCSANOW, &raw);
-}
 
 
 void handle_sigint(int sig){
@@ -72,100 +50,6 @@ void* keyboard_listener(void *arg){
   return NULL;
 }
 
-/*
-int memStr_to_int(char *str){
-  char buff[27] = {0};
-  int t = 0;
-  long return_value;
-
-  for (int i = 0; str[i] != '\0' && t < (int)sizeof(buff) - 1; i++) {   // it take the number in the string and save it
-      if (str[i] >= '0' && str[i] <= '9') {
-          buff[t++] = str[i];
-      }
-  }
-
-  buff[t] ='\0';
-
-  return_value = atoi(buff);
-  return return_value;
-}
-
-
-void fetch_Mem_Info(float *pTotal, float *pAvai, float *pUsed, float *Pprc){
-  FILE *fpmem = fopen(MEM_INFO_PATH, "r");
-    if(fpmem == NULL) {     // this looks bad for now but idk how to do it, work on that letar
-      printf("null\n");
-      exit; // i think it should be some pointer on a golbal var to chcek if the file open or not here
-    }
-    int kbToGib = 1024 * 1024;
-
-    mem  total;
-    mem  mfree;
-    mem  avail;
-
-    total.type, mfree.type, avail.type = RAM;
-
-    total.line = 0;
-    mfree.line = 1;
-    avail.line = 2;
-
-
-  for (int i = 0; i < 3; i++ ){
-    if(i == total.line) fgets(total.lineStr, sizeof(total.lineStr), fpmem);
-    if(i == mfree.line) fgets(mfree.lineStr, sizeof(mfree.lineStr), fpmem);
-    if(i == avail.line) fgets(avail.lineStr, sizeof(avail.lineStr), fpmem);
-
-  }
-
-  total.num = memStr_to_int(total.lineStr);
-  mfree.num = memStr_to_int(mfree.lineStr);
-  avail.num = memStr_to_int(avail.lineStr);
-
-  (*pTotal) = total.num / kbToGib;
-  (*pAvai)  = avail.num / kbToGib;
-  (*pUsed)  = (total.num - avail.num) / kbToGib;
-  (*Pprc)   = (avail.num/total.num ) * 100;
-
-
-  fclose(fpmem);
-}
-
-*/
-void print_funcs(prin cs){     // refrech print
-  switch (cs) {
-    case CLEAR:
-     printf(ESC "[2J" ESC "[H");
-    break;
-
-    case HIDE_CURSOR:
-     printf(ESC "[?25l");
-    break;
-
-    case RESTORR_CRUSOR:
-     printf(ESC "[?25h");
-    break;
-
-    case ENTER_BUFFER_SCREEN:
-      printf(ESC "[?1049h");
-    break;
-
-    case EXIT_BUFFER_SCREEN:
-      printf(ESC "[?1049l");
-    break;
-
-    default:
-      break;
-  }
-}
-
-
-void print_bar(char *name, float pr){
-    char bar[10] = "..........";
-    pr = 100 - pr;
-    int pr2 = pr/10;
-    for(int i = 0; i <= pr2; i++) bar[i] = '#';
-    printf("%s  [ %s ]  %%%.2f\n", name, bar, pr);
-};
 
 int main(int argc, char *argv[]){
   enable_row_mode();

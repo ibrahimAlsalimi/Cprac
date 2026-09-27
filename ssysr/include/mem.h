@@ -5,7 +5,6 @@ typedef struct mem{
   // MetricType type;
   char  lineStr[48];
   float  num;
-  int   line;
 } mem;
 
 

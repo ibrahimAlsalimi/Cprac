@@ -12,28 +12,17 @@ void fetch_Mem_Info(float *pTotal, float *pAvai, float *pUsed, float *Pprc){
       printf("null\n");
       // exit; // i think it should be some pointer on a golbal var to chcek if the file open or not here
     }
-    int kbToGib = 1024 * 1024;
+  
+  int kbToGib = 1024 * 1024;
 
-    mem  total;
-    mem  mfree;
-    mem  avail;
+  mem  total;
+  mem  mfree;
+  mem  avail;
 
-    // total.type, mfree.type, avail.type = RAM;
+  fgets(total.lineStr, sizeof(total.lineStr), fpmem);
+  fgets(mfree.lineStr, sizeof(mfree.lineStr), fpmem);
+  fgets(avail.lineStr, sizeof(avail.lineStr), fpmem);
 
-    total.line = 0;
-    mfree.line = 1;
-    avail.line = 2;
-
-
-  // for (int i = 0; i < 3; i++ ){
-    // if(i == total.line)
-      fgets(total.lineStr, sizeof(total.lineStr), fpmem);
-    // if(i == mfree.line) 
-      fgets(mfree.lineStr, sizeof(mfree.lineStr), fpmem);
-    // if(i == avail.line)
-      fgets(avail.lineStr, sizeof(avail.lineStr), fpmem);
-
-  // }
 
   sscanf(total.lineStr,"%*s %f", &total.num);
   sscanf(mfree.lineStr,"%*s %f", &mfree.num);

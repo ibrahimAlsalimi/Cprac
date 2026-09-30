@@ -37,7 +37,7 @@ void print_funcs(prin cs){     // refrech print
 void print_bar(char *name, float pr){
     char bar[10] = "..........";
     pr = 100 - pr;
-    int pr2 = pr/10;
+    float pr2 = pr/10;
     for(int i = 0; i <= pr2; i++) bar[i] = '#';
     printf("%s  [ %s ]  %%%.2f\n", name, bar, pr);
 }

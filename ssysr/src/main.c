@@ -19,8 +19,8 @@
 #include "term.h"
 #include "ui.h"
 #include "input.h"
+#include "cpu.h"
 
-#define CPU_STATS_PATH "/proc/stat"
 
 
 typedef enum MetricType{
@@ -35,7 +35,10 @@ int main(int argc, char *argv[]){
   pthread_t listener_thread;
   pthread_create(&listener_thread, NULL, keyboard_listener, NULL);
 
+  cpuMon cpuu;
+
   float used, avi, tot, pr = 0;
+  double ass;
 
   print_funcs(ENTER_BUFFER_SCREEN);
   print_funcs(CLEAR);
@@ -47,11 +50,13 @@ int main(int argc, char *argv[]){
     print_funcs(CLEAR);
     printf("Total     =   %.2f GiB\nUsed      =   %.2f GiB\nAvailble  =   %.2f GiB\n", tot, used, avi);
     print_bar("used", pr);
-
+    ass = getSexy(&cpuu);
+    printf("====================\n");
+    printf("%lf",ass);
     fflush(stdout);
     usleep(250000);
    }
-
+  freeall(&cpuu);
 
    print_funcs(EXIT_BUFFER_SCREEN);
     print_funcs(RESTORR_CRUSOR);

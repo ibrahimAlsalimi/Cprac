@@ -85,6 +85,7 @@ double getSexy(cpuMon *cpuu){
     int co = cpuu->core_count;
      readFile(cpuu, cpuu->core_count);
     initold(cpuu);
+    usleep(250000);
     readFile(cpuu, cpuu->core_count);
 
     unsigned long long dt;

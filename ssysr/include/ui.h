@@ -14,6 +14,6 @@ typedef enum prin{
 
 
 void print_funcs(prin cs);
-void print_bar(char *name, float pr, int min);
+void print_bar(char *name, double pr, int min);
 
 #endif 

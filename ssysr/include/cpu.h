@@ -31,9 +31,10 @@ int calccpu();
 void asinn(cpuMon *cpu);
 void staToInt(char *lin, cpuSam *m);
 void sumCores(cpuSam *m);
-double getSexy(cpuMon *cpuu);
+void getSexy(cpuMon *cpuu);
 void readFile(cpuMon *re, int count);
-double getUsage(cpuMon *cpuu, int i);
+void getUsage(cpuMon *cpuu);
+void print_cpu_core_usage(cpuMon *cpu);
 void freeall(cpuMon *cpuu);
 void initold(cpuMon *cpuu);
 

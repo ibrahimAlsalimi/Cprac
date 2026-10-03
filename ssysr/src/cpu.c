@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "cpu.h"
 
+#include "ui.h"
 
 #define CPU "/proc/stat"
 
@@ -70,6 +71,7 @@ void freeall(cpuMon *cpu){
 
 
 
+
 void initold(cpuMon *cpuu){
   for (int i = 0; i < cpuu->core_count; i++) {
     cpuu->core[i].prev = cpuu->core[i].cur;
@@ -77,7 +79,19 @@ void initold(cpuMon *cpuu){
  }
 }
 
-double getSexy(cpuMon *cpuu){
+
+
+void print_cpu_core_usage(cpuMon *cpuu){
+
+  for(int i = 0; i < cpuu->core_count; i++){
+    print_bar(cpuu->core[i].cur.name, cpuu->core[i].usage, 0);
+  }
+
+
+}
+
+
+void getSexy(cpuMon *cpuu){
 
     int i = 0;
 
@@ -87,15 +101,23 @@ double getSexy(cpuMon *cpuu){
     initold(cpuu);
     usleep(250000);
     readFile(cpuu, cpuu->core_count);
+    getUsage(cpuu);
+}
+
+
+void getUsage(cpuMon *cpuu){
 
     unsigned long long dt;
     unsigned long long di;
     double useg;
-
+ 
+    for(int i = 0; i < cpuu->core_count; i++){
       dt = cpuu->core[i].cur.sam_core_usage - cpuu->core[i].prev.sam_core_usage;
       di = (cpuu->core[i].cur.idle + cpuu->core[i].cur.iowait) - (cpuu->core[i].prev.idle + cpuu->core[i].prev.iowait);
       useg = (1.0 - (double)di / (double)dt ) * 100;
 
 
-      return useg;
-} 
+      cpuu->core[i].usage = useg;
+
+    }
+}

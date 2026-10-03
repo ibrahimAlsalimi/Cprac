@@ -46,13 +46,13 @@ int main(int argc, char *argv[]){
 
   while (running) {
 
-    ass = getSexy(&cpuu);
+    getSexy(&cpuu);
     print_funcs(CLEAR);
     fetch_Mem_Info(&tot, &avi, &used, &pr);
     printf("Total     =   %.2f GiB\nUsed      =   %.2f GiB\nAvailble  =   %.2f GiB\n", tot, used, avi);
     print_bar("used", pr, 100);
     printf("====================\n");
-    print_bar("cpu",ass, 0);
+    print_cpu_core_usage(&cpuu);
     fflush(stdout);
     usleep(250000);
    }

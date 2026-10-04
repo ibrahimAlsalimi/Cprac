@@ -38,6 +38,6 @@ void print_bar(char *name, double pr, int min){
     char bar[10] = "..........";
     if (min > 0 ) pr = min - pr;
     float pr2 = pr/10;
-    for(int i = 0; i <= pr2; i++) bar[i] = '#';
+    for(int i = 0; i < pr2; i++) bar[i] = '#';
     printf("%s\t[ %s ]\t%%%.2f\n", name, bar, pr);
 }

@@ -19,7 +19,7 @@ int calccpu(){
    
   while(run == 1) { 
     fgets(line, sizeof(line), fp); 
-    if (strncmp(line, "cpu", 1) == 0) cpu_count++;
+    if (strncmp(line, "cpu", 3) == 0) cpu_count++;
     else run = 0;
   }
 

@@ -55,8 +55,8 @@ int main(int argc, char *argv[]){
     print_cpu_core_usage(&cpuu);
     fflush(stdout);
     usleep(250000);
-   }
   freeall(&cpuu);
+   }
 
    print_funcs(EXIT_BUFFER_SCREEN);
     print_funcs(RESTORR_CRUSOR);
